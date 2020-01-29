@@ -8,7 +8,7 @@ to generate transactions.
 Documentation can be found [here](https://harmony-transaction-generator.s3-us-west-2.amazonaws.com/doc/index.html) and example scripts
 that use the transaction generator can be found in the root of this directory with the suffix `_example.py`
 
-*Note that this only works on MacOS and Linux. It could possibly work on WSL, but this is untested.*
+*Note that this only works on MacOS or Linux. It could possibly work on WSL, but this is untested.*
 
 ## Install
 
