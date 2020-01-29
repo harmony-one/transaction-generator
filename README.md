@@ -40,14 +40,14 @@ Note that one account does NOT have to have funds on all shard, but across all a
 > This is because the library only does same shard transfers when funding to be conservative.
 
 ## How it works
-A video demoing library can be seen [here](https://www.youtube.com/watch?v=rTp9wZn1EqE&feature=youtu.be)
-
 The docs can be found [here](https://harmony-transaction-generator.s3-us-west-2.amazonaws.com/doc/index.html).
 
 Take a look at the `localnet_example.py` for some idea of how it works.
 Essentially, it follows a source / sink model for transaction generation (explained more in the `start` function
 [here](https://harmony-transaction-generator.s3-us-west-2.amazonaws.com/doc/generator.html)). Moreover, the annotations of the config in `localnet_example.py`
 should give a better idea of how to use the library.
+
+A video demoing library can be seen [here](https://www.youtube.com/watch?v=rTp9wZn1EqE&feature=youtu.be)
 
 ## Analysis
 The `analysis` module of this library has a `verify_transaction` function that looks at the transaction logs and checks
@@ -62,7 +62,7 @@ the `filename` attribute of the logger, for example `tx_gen.Loggers.transaction.
 **The package has NOT been thoroughly tested so please report bugs and/or PR fixes if you find any, thank you!** 
 
 ## Troubleshooting Errors While Testing
-####Possible fixes
+#### Possible fixes
 * Backup and clear keystore at `~/.hmy_cli/account-keys`
 * Update pyhmy to latest version, can be checked [here](https://pypi.org/project/pyhmy/).
 > Check version with `python3 -m pip list | grep pyhmy` 
