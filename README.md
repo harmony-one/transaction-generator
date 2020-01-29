@@ -15,8 +15,10 @@ You can install the library from pypi using the following command:
 python3 -m pip install harmony-transaction-generator
 ```
 
-You will require the latest version of `pyhmy` (which may not install if you already have it). To get latest version,
-just do `python3 -m pip install pyhmy --upgrade` 
+You will require the latest version of `pyhmy` (which may not install if you already have it). You can get the latest with the following command:
+```
+python3 -m pip install pyhmy --upgrade
+```
 
 
 ## Development Installation
