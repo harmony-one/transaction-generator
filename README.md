@@ -8,6 +8,8 @@ to generate transactions.
 Documentation can be found [here](https://harmony-transaction-generator.s3-us-west-2.amazonaws.com/doc/index.html) and example scripts
 that use the transaction generator can be found in the root of this directory with the suffix `_example.py`
 
+*Note that this only works on MacOS and Linux. It could possibly work on WSL, but this is untested.*
+
 ## Install
 
 You can install the library from pypi using the following command:
@@ -23,7 +25,7 @@ python3 -m pip install pyhmy --upgrade
 
 ## Development Installation
 
-In this current directory run:
+Clone this repo and run:
 ```
 make install
 ```
