@@ -1,4 +1,5 @@
 import datetime
+import os
 from pyhmy.logging import ControlledLogger
 
 _config = {
@@ -11,7 +12,7 @@ _config = {
     "ESTIMATED_GAS_PER_TXN": 1e-3,  # The estimated gas, hardcoded
     "INIT_SRC_ACC_BAL_PER_SHARD": 1,  # The initial balance for EVERY source account
     "TXN_WAIT_TO_CONFIRM": 60,  # The timeout when a transaction is sent (only used in setup related functions)
-    "MAX_THREAD_COUNT": 16,  # Max thread is recommended to be less than your v-core count
+    "MAX_THREAD_COUNT": os.cpu_count()//2,  # Max thread is recommended to be less than your v-core count
     "ENDPOINTS": [  # Endpoints for all transaction, index i = shard i
         "https://api.s0.pga.hmny.io/",
         "https://api.s1.pga.hmny.io/",
