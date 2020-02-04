@@ -59,7 +59,9 @@ def _fund(src_acc, accounts, amount, shard_index):
         passphrase = get_passphrase(src_acc)
         batch.add(from_address, to_address, shard_index, shard_index, amount, passphrase=passphrase, error_ok=False)
         Loggers.general.info(f"Funding {to_address} ({account}) for shard {shard_index}")
-    sent_report = batch.send(config["ENDPOINTS"][shard_index], wait_for_confirm=config['TXN_WAIT_TO_CONFIRM'])
+    sent_report = batch.send(config["ENDPOINTS"][shard_index],
+                             wait_for_confirm=config['TXN_WAIT_TO_CONFIRM'],
+                             chain_id=config["CHAIN_ID"])
     return [r["transaction-receipt"] for r in sent_report]
 
 

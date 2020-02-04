@@ -164,7 +164,7 @@ def start(source_accounts, sink_accounts):
                     for j in range(gen_count):
                         batch.add(src_address, snk_address, src_shard, snk_shard, txn_amt,
                                   nonce=curr_nonce + j, passphrase=passphrase, error_ok=True)
-            batch.send(config["ENDPOINTS"][0])  # p2p broadcasts to all shards for txns
+            batch.send(config["ENDPOINTS"][0], chain_id=config["CHAIN_ID"])  # p2p broadcasts to all shards for txns
 
     Loggers.general.info("Started transaction generator...")
     thread_count = multiprocessing.cpu_count() if not config['MAX_THREAD_COUNT'] else config['MAX_THREAD_COUNT']
