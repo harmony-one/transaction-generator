@@ -99,11 +99,11 @@ class BatchTransactions:
         """
         return copy.deepcopy(self._transactions_buffer)
 
-    def send(self, endpoint, wait_for_confirm=None):
+    def send(self, endpoint, wait_for_confirm=None, chain_id="testnet"):
         """
         This will send all transactions in the buffer of transaction **sequentially** using the CLI
-        with the provided `endpoint`. One can force each transaction to confirm by providing a max
-        `wait_for_confirm` time.
+        with the provided `endpoint` and `chain_id`. One can force each transaction to confirm by
+        providing a max `wait_for_confirm` time.
 
         This will return a list of dictionaries that contain transaction information (and possibly errors)
         of all the transactions sent.
@@ -117,7 +117,7 @@ class BatchTransactions:
         with open(self._file_name, 'w') as f:
             json.dump(self._transactions_buffer, f, indent=4)
 
-        command = f"hmy --node={endpoint} transfer --file {self._file_name} "
+        command = f"hmy --node={endpoint} transfer --file {self._file_name} --chain-id {chain_id} "
         if wait_for_confirm:
             command += f"--wait-for-confirm {wait_for_confirm} "
         timeout = None if self.size is None else get_config()["TXN_WAIT_TO_CONFIRM"] * self.size
