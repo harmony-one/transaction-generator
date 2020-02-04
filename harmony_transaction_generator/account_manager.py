@@ -148,16 +148,36 @@ class BatchTransactions:
 
 def create_accounts(count, name_prefix="generated"):
     """
-    # TODO: improve account creation, need to make pyhmy better at acc name syncing...
     Create `count` accounts where all account-names/wallet-names have the prefix `name_prefix`.
     """
+    config = get_config()
     assert count > 0
     benchmarking_accounts = []
-    for i in range(count):
-        acc_name = f"{import_account_name_prefix}{name_prefix}_{i}"
-        create_account(acc_name)
-        Loggers.general.info(f"Created account: {cli.get_address(acc_name)} ({acc_name})")
-        benchmarking_accounts.append(acc_name)
+
+    def create(start_i, end_i):
+        local_accounts = []
+        for j in range(start_i, end_i):
+            acc_name = f"{import_account_name_prefix}{name_prefix}_{j}"
+            create_account(acc_name)
+            Loggers.general.info(f"Created account: {cli.get_address(acc_name)} ({acc_name})")
+            local_accounts.append(acc_name)
+        return local_accounts
+
+    max_threads = multiprocessing.cpu_count() if not config['MAX_THREAD_COUNT'] else config['MAX_THREAD_COUNT']
+    max_threads = min(count, max_threads)
+    steps = int(math.ceil(count / max_threads))
+    if count < 2:
+        benchmarking_accounts = create(0, count)
+    else:
+        threads = []
+        pool = ThreadPool(processes=max_threads)
+        for i in range(max_threads):
+            threads.append(pool.apply_async(create, (i * steps, min(count, (i + 1) * steps))))
+        for t in threads:
+            benchmarking_accounts.extend(t.get())
+        pool.close()
+        pool.join()
+
     return benchmarking_accounts
 
 
