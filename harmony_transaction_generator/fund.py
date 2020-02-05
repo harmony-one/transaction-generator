@@ -117,7 +117,9 @@ def fund_accounts(accounts, shard_indexes=None, amount=None):
 
         def filter_fn(account):
             balances = get_balances(account)
-            if shard_index < len(balances):
+            if len(balances == 1) and balances[0]["shard"] == shard_index:
+                return balances[0]["amount"] < amount
+            if len(balances) > shard_index == balances[shard_index]["shard"]:
                 return balances[shard_index]["amount"] < amount
             return True
 
