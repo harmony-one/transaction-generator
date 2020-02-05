@@ -168,7 +168,10 @@ def create_accounts(count, name_prefix="generated"):
         for j in range(start_i, end_i):
             acc_name = f"{import_account_name_prefix}{name_prefix}_{j}"
             create_account(acc_name)
-            Loggers.general.info(f"Created account: {cli.get_address(acc_name)} ({acc_name})")
+            addr = cli.get_address(acc_name)
+            while addr is None:  # Just added accounts, need to ensure we can fetch from keystore, TODO must improve.
+                addr = cli.get_address(acc_name)
+            Loggers.general.info(f"Created account: {addr} ({acc_name})")
             local_accounts.append(acc_name)
         return local_accounts
 
