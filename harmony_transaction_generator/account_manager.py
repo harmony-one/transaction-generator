@@ -122,12 +122,15 @@ class BatchTransactions:
             command += f"--wait-for-confirm {wait_for_confirm} "
         timeout = None if self.size is None else get_config()["TXN_WAIT_TO_CONFIRM"] * self.size
 
-        response = cli.single_call(command, error_ok=True, timeout=timeout)
-        for _ in range(retry_count-1):
-            if response:
+        try_count = 0
+        while True:
+            try:
+                response = json_load(cli.single_call(command, error_ok=True, timeout=timeout))
                 break
-            response = cli.single_call(command, error_ok=True, timeout=timeout)
-        response = json_load(response)
+            except Exception as e:
+                if try_count > retry_count:
+                    raise e from e
+                try_count += 1
 
         for txn, sent_txn in zip(self._transactions_buffer, response):
             info = {  # Cast elements to fit transaction logger convention.
