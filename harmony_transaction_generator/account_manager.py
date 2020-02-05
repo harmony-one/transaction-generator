@@ -128,7 +128,7 @@ class BatchTransactions:
                 response = json_load(cli.single_call(command, error_ok=True, timeout=timeout))
                 break
             except Exception as e:
-                if try_count > retry_count:
+                if try_count >= retry_count:
                     raise e from e
                 try_count += 1
 
