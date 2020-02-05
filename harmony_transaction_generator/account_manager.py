@@ -99,11 +99,11 @@ class BatchTransactions:
         """
         return copy.deepcopy(self._transactions_buffer)
 
-    def send(self, endpoint, wait_for_confirm=None, chain_id="testnet"):
+    def send(self, endpoint, wait_for_confirm=None, chain_id="testnet", retry_count=5):
         """
         This will send all transactions in the buffer of transaction **sequentially** using the CLI
         with the provided `endpoint` and `chain_id`. One can force each transaction to confirm by
-        providing a max `wait_for_confirm` time.
+        providing a max `wait_for_confirm` time. One can set the max number of retries via `retry_count`.
 
         This will return a list of dictionaries that contain transaction information (and possibly errors)
         of all the transactions sent.
@@ -121,7 +121,13 @@ class BatchTransactions:
         if wait_for_confirm:
             command += f"--wait-for-confirm {wait_for_confirm} "
         timeout = None if self.size is None else get_config()["TXN_WAIT_TO_CONFIRM"] * self.size
-        response = json_load(cli.single_call(command, error_ok=True, timeout=timeout))
+
+        response = cli.single_call(command, error_ok=True, timeout=timeout)
+        for _ in range(retry_count-1):
+            if not response:
+                break
+            response = cli.single_call(command, error_ok=True, timeout=timeout)
+        response = json_load(response)
 
         for txn, sent_txn in zip(self._transactions_buffer, response):
             info = {  # Cast elements to fit transaction logger convention.
