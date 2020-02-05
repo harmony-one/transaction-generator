@@ -8,7 +8,7 @@ from .common import (
     get_config,
 )
 from .account_manager import (
-    BatchTransactions,
+    send_transaction,
     account_balances,
     get_passphrase,
     get_balances
@@ -51,18 +51,17 @@ def _fund(src_acc, accounts, amount, shard_index):
     """
     if not accounts:
         return []
-    config = get_config()
-    batch = BatchTransactions()
+    hashes = []
     for account in accounts:
         from_address = cli.get_address(src_acc)
         to_address = cli.get_address(account)
         passphrase = get_passphrase(src_acc)
-        batch.add(from_address, to_address, shard_index, shard_index, amount, passphrase=passphrase, error_ok=False)
-        Loggers.general.info(f"Funding {to_address} ({account}) for shard {shard_index}")
-    sent_report = batch.send(config["ENDPOINTS"][shard_index],
-                             wait_for_confirm=config['TXN_WAIT_TO_CONFIRM'],
-                             chain_id=config["CHAIN_ID"])
-    return [r["transaction-receipt"] for r in sent_report]
+        h = send_transaction(from_address, to_address, shard_index, shard_index, amount,
+                             passphrase=passphrase, retry=True, wait=True)
+        if h is None:
+            raise RuntimeError(f"Failed to send tx from {from_address} to {to_address}")
+        hashes.append(h)
+    return hashes
 
 
 def _fund_accounts_from_account_pool(accounts, shard_index, amount_per_account, account_pool):
