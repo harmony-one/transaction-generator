@@ -124,7 +124,7 @@ class BatchTransactions:
 
         response = cli.single_call(command, error_ok=True, timeout=timeout)
         for _ in range(retry_count-1):
-            if not response:
+            if response:
                 break
             response = cli.single_call(command, error_ok=True, timeout=timeout)
         response = json_load(response)
