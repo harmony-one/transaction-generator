@@ -8,6 +8,7 @@ import random
 import copy
 from multiprocessing.pool import ThreadPool
 
+import pexpect
 from pyhmy import cli
 from pyhmy.util import (
     json_load
@@ -365,7 +366,7 @@ def send_transaction(from_address, to_address, src_shard, dst_shard, amount,
             info['hash'] = json_load(response)["transaction-receipt"]
             Loggers.transaction.info(json.dumps(info))
             return info['hash']
-        except (RuntimeError, json.JSONDecodeError) as e:
+        except (RuntimeError, json.JSONDecodeError, pexpect.exceptions.TIMEOUT) as e:
             if not retry or attempt_count >= max_tries:
                 info['error'] = str(e)
                 Loggers.transaction.error(json.dumps(info))

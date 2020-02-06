@@ -22,7 +22,7 @@ setup(
         'incremental',
         'click',
         'twisted',
-        'requests'
+        'requests', 'pexpect'
     ],
     setup_requires=[
         'incremental',
