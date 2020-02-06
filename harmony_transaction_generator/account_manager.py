@@ -359,7 +359,7 @@ def send_transaction(from_address, to_address, src_shard, dst_shard, amount,
     }
     while True:
         try:
-            proc = cli.expect_call(command)
+            proc = cli.expect_call(command, timeout=config["TXN_WAIT_TO_CONFIRM"])
             process_passphrase(proc, passphrase)
             response = proc.read()
             info['hash'] = json_load(response)["transaction-receipt"]
