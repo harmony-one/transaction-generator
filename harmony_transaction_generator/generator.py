@@ -1,8 +1,6 @@
-import math
 import random
 import multiprocessing
 import itertools
-import time
 from threading import Lock
 from multiprocessing.pool import ThreadPool
 
@@ -157,13 +155,16 @@ def start(source_accounts, sink_accounts):
                     send_transaction(src_address, snk_address, src_shard, snk_shard, txn_amt,
                                      passphrase=passphrase, wait=False)
                 else:
-                    curr_nonce = _get_nonce(endpoints[src_shard], src_address)
+                    curr_nonce, lock = ref_nonce[src_name][src_shard]
+                    lock.acquire()
                     gen_count = _implicit_gen_txn_nonce
                     if config["MAX_TXN_GEN_COUNT"]:
                         gen_count = min(config["MAX_TXN_GEN_COUNT"] - txn_count, gen_count)
                     for j in range(gen_count):
                         batch.add(src_address, snk_address, src_shard, snk_shard, txn_amt,
                                   nonce=curr_nonce + j, passphrase=passphrase, error_ok=True)
+                    ref_nonce[src_name][src_shard][0] += gen_count
+                    lock.release()
             batch.send(config["ENDPOINTS"][0], chain_id=config["CHAIN_ID"])  # p2p broadcasts to all shards for txns
 
     Loggers.general.info("Started transaction generator...")

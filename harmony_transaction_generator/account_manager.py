@@ -100,11 +100,11 @@ class BatchTransactions:
         """
         return copy.deepcopy(self._transactions_buffer)
 
-    def send(self, endpoint, wait_for_confirm=None, chain_id="testnet", retry_count=5):
+    def send(self, endpoint, wait_for_confirm=None, chain_id="testnet"):
         """
         This will send all transactions in the buffer of transaction **sequentially** using the CLI
         with the provided `endpoint` and `chain_id`. One can force each transaction to confirm by
-        providing a max `wait_for_confirm` time. One can set the max number of retries via `retry_count`.
+        providing a max `wait_for_confirm` time.
 
         This will return a list of dictionaries that contain transaction information (and possibly errors)
         of all the transactions sent.
@@ -122,16 +122,7 @@ class BatchTransactions:
         if wait_for_confirm:
             command += f"--wait-for-confirm {wait_for_confirm} "
         timeout = None if self.size is None else get_config()["TXN_WAIT_TO_CONFIRM"] * self.size
-
-        try_count = 0
-        while True:
-            try:
-                response = json_load(cli.single_call(command, error_ok=True, timeout=timeout))
-                break
-            except Exception as e:
-                if try_count >= retry_count:
-                    raise e from e
-                try_count += 1
+        response = json_load(cli.single_call(command, error_ok=True, timeout=timeout))
 
         for txn, sent_txn in zip(self._transactions_buffer, response):
             info = {  # Cast elements to fit transaction logger convention.
@@ -279,6 +270,7 @@ def create_account(account_name, exist_ok=True):
     This will create a single account with `account_name`. One can choose to continue
     if the account exists by setting `exist_ok` to true.
     """
+    # TODO: add caching
     try:
         cli.single_call(f"hmy keys add {account_name}")
     except RuntimeError as e:
