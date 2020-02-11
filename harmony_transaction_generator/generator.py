@@ -119,8 +119,6 @@ def start(source_accounts, sink_accounts):
 
     def generate_transactions(src_accounts, snk_accounts):
         nonlocal txn_count
-        ref_nonce = {n: [[_get_nonce(endpoints[j], cli.get_address(n)), Lock()] for j in range(len(endpoints))]
-                     for n in src_accounts}
         batch = BatchTransactions()
         src_accounts_iter = itertools.cycle(src_accounts)
         snk_accounts_iter = itertools.cycle(acc for _ in range(len(src_accounts)) for acc in snk_accounts)
@@ -128,21 +126,19 @@ def start(source_accounts, sink_accounts):
             src_name = next(src_accounts_iter)
             src_address = cli.get_address(src_name)
             passphrase = get_passphrase(src_name)
+            ref_nonce = [_get_nonce(endpoints[j], src_address) for j in range(len(endpoints))]
             for _ in range(len(snk_accounts)):
                 snk_address = cli.get_address(next(snk_accounts_iter))
                 txn_amt = round(random.uniform(config["AMT_PER_TXN"][0], config["AMT_PER_TXN"][1]), 18)
                 src_shard, snk_shard = generate_to_and_from_shard()
                 if config["ENFORCE_NONCE"]:
-                    n, n_lock = ref_nonce[src_name][src_shard]
-                    n_lock.acquire()
+                    n = ref_nonce[src_shard]
                     curr_nonce = _get_nonce(endpoints[src_shard], src_address)
                     if curr_nonce < n:
-                        n_lock.release()
                         continue
                     if curr_nonce > n:  # sync nonce if too big
-                        ref_nonce[src_name][src_shard][0] = curr_nonce
-                    ref_nonce[src_name][src_shard][0] += 1
-                    n_lock.release()
+                        ref_nonce[src_shard] = curr_nonce
+                    ref_nonce[src_shard] += 1
                 if config["MAX_TXN_GEN_COUNT"] is not None:
                     count_lock.acquire()
                     if txn_count >= config["MAX_TXN_GEN_COUNT"]:
@@ -155,16 +151,14 @@ def start(source_accounts, sink_accounts):
                     send_transaction(src_address, snk_address, src_shard, snk_shard, txn_amt,
                                      passphrase=passphrase, wait=False)
                 else:
-                    curr_nonce, lock = ref_nonce[src_name][src_shard]
-                    lock.acquire()
+                    curr_nonce = ref_nonce[src_shard]
                     gen_count = _implicit_gen_txn_nonce
                     if config["MAX_TXN_GEN_COUNT"]:
                         gen_count = min(config["MAX_TXN_GEN_COUNT"] - txn_count, gen_count)
                     for j in range(gen_count):
                         batch.add(src_address, snk_address, src_shard, snk_shard, txn_amt,
                                   nonce=curr_nonce + j, passphrase=passphrase, error_ok=True)
-                    ref_nonce[src_name][src_shard][0] += gen_count
-                    lock.release()
+                    ref_nonce[src_shard] += gen_count
             batch.send(config["ENDPOINTS"][0], chain_id=config["CHAIN_ID"])  # p2p broadcasts to all shards for txns
 
     Loggers.general.info("Started transaction generator...")
