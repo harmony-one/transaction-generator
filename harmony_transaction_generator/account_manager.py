@@ -103,7 +103,7 @@ class BatchTransactions:
     def send(self, endpoint, wait_for_confirm=None, chain_id="testnet"):
         """
         This will send all transactions in the buffer of transaction **sequentially** using the CLI
-        with the provided `endpoint` and `chain_id`. One can force each transaction to confirm by
+        with the provided `endpoint` and `chain_id`. One can force EACH transaction to confirm by
         providing a max `wait_for_confirm` time.
 
         This will return a list of dictionaries that contain transaction information (and possibly errors)
@@ -119,8 +119,7 @@ class BatchTransactions:
             json.dump(self._transactions_buffer, f, indent=4)
 
         command = f"hmy --node={endpoint} transfer --file {self._file_name} --chain-id {chain_id} "
-        if wait_for_confirm:
-            command += f"--wait-for-confirm {wait_for_confirm} "
+        command += f"--timeout {wait_for_confirm} " if wait_for_confirm else f"--timeout 0 "
         timeout = None if self.size is None else get_config()["TXN_WAIT_TO_CONFIRM"] * self.size
         response = json_load(cli.single_call(command, error_ok=True, timeout=timeout))
 
@@ -134,8 +133,8 @@ class BatchTransactions:
             }
             if "nonce" in txn.keys():
                 info['nonce'] = int(txn['nonce'])
-            if "transaction-receipt" in sent_txn.keys():
-                info['hash'] = sent_txn['transaction-receipt']
+            if "transaction-hash" in sent_txn.keys():
+                info['hash'] = sent_txn['transaction-hash']
             if "errors" in sent_txn.keys():
                 info['error'] = ', '.join(e for e in sent_txn['errors'])
             if "time-signed-utc" in sent_txn.keys():
@@ -329,7 +328,7 @@ def send_transaction(from_address, to_address, src_shard, dst_shard, amount,
     for the transaction to confirm before returning. One can choose to `retry` up to `max_tries` times
     if the transaction fails to send.
 
-    It will return the "transaction-receipt" once the transaction is sent.
+    It will return the "transaction-hash" once the transaction is sent.
     """
     config = get_config()
     assert cli.check_address(from_address), "source address must be in the CLI's keystore."
@@ -339,8 +338,7 @@ def send_transaction(from_address, to_address, src_shard, dst_shard, amount,
               f"--from-shard={src_shard} --to-shard={dst_shard} " \
               f"--amount={amount} --chain-id={config['CHAIN_ID']} " \
               f"--gas-price {gas_price} --gas-limit {gas_limit} --passphrase "
-    if wait:
-        command += f"--wait-for-confirm {config['TXN_WAIT_TO_CONFIRM']} "
+    command += f"--timeout {config['TXN_WAIT_TO_CONFIRM']} " if wait else f"--timeout 0 "
     if nonce:
         command += f"--nonce {nonce} "
     info = {
@@ -355,7 +353,7 @@ def send_transaction(from_address, to_address, src_shard, dst_shard, amount,
             proc = cli.expect_call(command, timeout=config["TXN_WAIT_TO_CONFIRM"])
             process_passphrase(proc, passphrase)
             response = proc.read()
-            info['hash'] = json_load(response)["transaction-receipt"]
+            info['hash'] = json_load(response)["transaction-hash"]
             Loggers.transaction.info(json.dumps(info))
             return info['hash']
         except (RuntimeError, json.JSONDecodeError, pexpect.exceptions.TIMEOUT) as e:
@@ -376,7 +374,7 @@ def return_balances(accounts, wait=False):
     the config where `accounts` is an iterable of account-names/wallet-names.
     One can choose to `wait` for each transaction to succeed.
 
-    This will return a list of "transaction-receipts" once all the transactions is sent.
+    This will return a list of "transaction-hashs" once all the transactions is sent.
     """
     config = get_config()
     Loggers.general.info("Refunding accounts...")
