@@ -4,7 +4,7 @@ A simple script ot fund all accounts for P-OPS and internal accounts.
 Note: It assumes the devnet faucet keyfile is in `./devnet_faucet_key` and has an empty string as the passphrase.
 
 To run, execute the following in the terminal:
-    $ python3 fund_devnet.py
+    $ python3 fund.py
 
 After that, you will get:
     3 directories:
@@ -28,15 +28,16 @@ import pyhmy
 from pyhmy import cli
 import harmony_transaction_generator as tx_gen
 
+
 private_keys_dir = "./private_faucet_keys"
 pops_keys_dir = "./pops_faucet_keys"
 internal_keys_dir = "./internal_faucet_keys"
 ENDPOINTS = [
-    "https://api.s0.pga.hmny.io/",
-    "https://api.s1.pga.hmny.io/",
-    "https://api.s2.pga.hmny.io/"
+    "https://api.s0.os.hmny.io/",
+    "https://api.s1.os.hmny.io/",
+    "https://api.s2.os.hmny.io/"
 ]
-CHAIN_ID = "devnet"
+CHAIN_ID = "testnet"
 
 
 def setup():
@@ -72,8 +73,8 @@ if __name__ == "__main__":
     setup()
     tx_gen.set_config({
         "ESTIMATED_GAS_PER_TXN": 1e-3,
-        "INIT_SRC_ACC_BAL_PER_SHARD": 2000000,
-        "TXN_WAIT_TO_CONFIRM": 75,
+        "INIT_SRC_ACC_BAL_PER_SHARD": 1000000,
+        "TXN_WAIT_TO_CONFIRM": 600,
         "MAX_THREAD_COUNT": None,
         "ENDPOINTS": ENDPOINTS,
         "CHAIN_ID": CHAIN_ID
@@ -92,7 +93,7 @@ if __name__ == "__main__":
 
     # === Generate private funding keys ===
     print("Bootstrapping funding process using faucet key(s) in `./devnet_faucet_key`")
-    tx_gen.load_accounts("./devnet_faucet_key", "", fast_load=True)
+    tx_gen.load_accounts("./faucet_key", "", fast_load=True)
     private_faucet_keys = tx_gen.create_accounts(15, "PRIVATE_FAUCET")
     tx_gen.fund_accounts(private_faucet_keys)
     for key_dir in os.listdir(key_store_path):
@@ -107,13 +108,13 @@ if __name__ == "__main__":
     tx_gen.set_config({
         "ESTIMATED_GAS_PER_TXN": 1e-3,
         "INIT_SRC_ACC_BAL_PER_SHARD": 2500,
-        "TXN_WAIT_TO_CONFIRM": 75,
+        "TXN_WAIT_TO_CONFIRM": 600,
         "MAX_THREAD_COUNT": None,
         "ENDPOINTS": ENDPOINTS,
         "CHAIN_ID": CHAIN_ID
     })
-    pops_faucet_keys = tx_gen.create_accounts(270, "POPS_FAUCET")
-    tx_gen.fund_accounts(pops_faucet_keys)
+    pops_faucet_keys = tx_gen.create_accounts(42, "POPS_FAUCET")
+    tx_gen.fund_accounts(pops_faucet_keys, [2])
     for key_dir in os.listdir(key_store_path):
         if "POPS_FAUCET" in key_dir:
             shutil.copytree(os.path.join(key_store_path, key_dir), f"{pops_keys_dir}/{key_dir}")
@@ -127,7 +128,7 @@ if __name__ == "__main__":
     tx_gen.set_config({
         "ESTIMATED_GAS_PER_TXN": 1e-3,
         "INIT_SRC_ACC_BAL_PER_SHARD": 10000,
-        "TXN_WAIT_TO_CONFIRM": 75,
+        "TXN_WAIT_TO_CONFIRM": 600,
         "MAX_THREAD_COUNT": None,
         "ENDPOINTS": ENDPOINTS,
         "CHAIN_ID": CHAIN_ID
@@ -145,3 +146,4 @@ if __name__ == "__main__":
     tx_gen.remove_accounts(private_faucet_keys, backup=False)
     tx_gen.remove_accounts(pops_faucet_keys, backup=False)
     tx_gen.remove_accounts(internal_faucet_keys, backup=False)
+
