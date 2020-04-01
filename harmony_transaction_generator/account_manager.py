@@ -207,9 +207,6 @@ def process_passphrase(proc, passphrase):
     """
     proc.expect("Enter passphrase:\r\n")
     proc.sendline(passphrase)
-    proc.expect("Repeat the passphrase:\r\n")
-    proc.sendline(passphrase)
-    proc.expect("\n")
 
 
 def load_accounts(keystore_path, passphrase, name_prefix="import", fast_load=False):

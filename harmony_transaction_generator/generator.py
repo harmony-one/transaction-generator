@@ -126,6 +126,8 @@ def start(source_accounts, sink_accounts):
             src_name = next(src_accounts_iter)
             src_address = cli.get_address(src_name)
             passphrase = get_passphrase(src_name)
+            # TODO: look into a way to account for a slow get nonce, which might make tx fail...
+            # Maybe cooldown per src account..., have to redo shuffle technique, make sure to loop over all src accs...
             ref_nonce = [_get_nonce(endpoints[j], src_address) for j in range(len(endpoints))]
             for _ in range(len(snk_accounts)):
                 snk_address = cli.get_address(next(snk_accounts_iter))

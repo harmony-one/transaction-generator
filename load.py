@@ -35,11 +35,11 @@ tx_gen.set_config({
     "ENFORCE_NONCE": False,  # If true, will only generate transactions with a valid nonce
     "ESTIMATED_GAS_PER_TXN": 1e-3,  # The estimated gas, hardcoded
     "INIT_SRC_ACC_BAL_PER_SHARD": 5,  # The initial balance for EVERY source account
-    "TXN_WAIT_TO_CONFIRM": 60,  # The timeout when a transaction is sent (only used in setup related functions)
-    "MAX_THREAD_COUNT": os.cpu_count() - 2,  # Max thread is recommended to be less than your v-core count
+    "TXN_WAIT_TO_CONFIRM": 200,  # The timeout when a transaction is sent (only used in setup related functions)
+    "MAX_THREAD_COUNT": os.cpu_count(),  # Max thread is recommended to be less than your v-core count
     "ENDPOINTS": [  # Endpoints for all transaction, index i = shard i
-        "https://api.s0.b2.hmny.io",
-        "https://api.s1.b2.hmny.io",
+        "https://api.s0.stn.hmny.io",
+        "https://api.s1.stn.hmny.io",
     ],
     "SRC_SHARD_WEIGHTS": [  # Adjust the likelihood that shard i (i = index) gets chosen to be the source shard
         1,                  # Bigger number = higher likelihood of shard i begin chosen
